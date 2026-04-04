@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ktrgiuaki",
+    "name": "Quản Lý Sản Phẩm",
     "slug": "ktrgiuaki",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,20 +10,39 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a1f36"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Cần quyền truy cập camera để chụp ảnh sản phẩm.",
+        "NSPhotoLibraryUsageDescription": "Cần quyền truy cập thư viện ảnh để chọn ảnh sản phẩm."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1a1f36"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cần quyền truy cập thư viện ảnh để chọn ảnh sản phẩm.",
+          "cameraPermission": "Cần quyền truy cập camera để chụp ảnh sản phẩm."
+        }
+      ]
+    ]
   }
 }
+
