@@ -29,5 +29,5 @@ export const CLOUDINARY_CLOUD_NAME = 'example';
 export const CLOUDINARY_UPLOAD_PRESET = 'example';
 
 // 🤖 Google Gemini API Key (miễn phí tại https://aistudio.google.com/apikey)
-export const GEMINI_API_KEY = 'AIzaSyCgvMml5pRUG9TkXr7mQfukHjASO2K6e_k';
+export const GEMINI_API_KEY = '...........';
 
