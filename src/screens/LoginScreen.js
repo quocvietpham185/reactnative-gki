@@ -11,10 +11,10 @@ import {
   Platform,
   Image,
 } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,6 +37,29 @@ export default function LoginScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    let inputEmail = email.trim();
+    Alert.prompt(
+      'Quên mật khẩu',
+      'Nhập email để nhận link đặt lại mật khẩu:',
+      async (value) => {
+        const target = value?.trim() || inputEmail;
+        if (!target) { Alert.alert('Lỗi', 'Vui lòng nhập email'); return; }
+        try {
+          await sendPasswordResetEmail(auth, target);
+          Alert.alert('✅ Đã gửi', `Email đặt lại mật khẩu đã được gửi đến:\n${target}`);
+        } catch (error) {
+          let msg = 'Gửi email thất bại';
+          if (error.code === 'auth/user-not-found') msg = 'Email này chưa được đăng ký';
+          else if (error.code === 'auth/invalid-email') msg = 'Email không hợp lệ';
+          Alert.alert('Lỗi', msg);
+        }
+      },
+      'plain-text',
+      inputEmail
+    );
   };
 
   return (
@@ -94,6 +117,18 @@ export default function LoginScreen() {
           ) : (
             <Text style={styles.btnText}>Đăng Nhập</Text>
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotBtn}>
+          <Text style={styles.forgotText}>Quên mật khẩu?</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Register')}
+          style={styles.linkRow}
+        >
+          <Text style={styles.linkText}>Chưa có tài khoản? </Text>
+          <Text style={styles.linkBold}>Đăng ký ngay</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -183,5 +218,30 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
+  },
+  linkRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  linkText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  linkBold: {
+    color: '#4f6ef7',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  forgotBtn: {
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  forgotText: {
+    color: '#4f6ef7',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

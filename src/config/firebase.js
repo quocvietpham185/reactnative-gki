@@ -27,3 +27,7 @@ export const auth = initializeAuth(app, {
 // Bước 3: Điền Cloud name và Upload preset name vào đây
 export const CLOUDINARY_CLOUD_NAME = 'dkhivu5h0';
 export const CLOUDINARY_UPLOAD_PRESET = 'ktragiuakidanentang';
+
+// 🤖 Google Gemini API Key (miễn phí tại https://aistudio.google.com/apikey)
+export const GEMINI_API_KEY = 'AIzaSyCgvMml5pRUG9TkXr7mQfukHjASO2K6e_k';
+

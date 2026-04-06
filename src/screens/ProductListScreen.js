@@ -14,6 +14,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { subscribeProducts, deleteProduct } from '../services/productService';
+import { useAuth } from '../context/AuthContext';
 
 const SORT_OPTIONS = [
   { key: 'newest', label: 'Mới nhất' },
@@ -22,6 +23,7 @@ const SORT_OPTIONS = [
 ];
 
 export default function ProductListScreen({ navigation }) {
+  const { isAdmin, role } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
@@ -46,25 +48,21 @@ export default function ProductListScreen({ navigation }) {
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // Tìm kiếm theo tên
     if (searchText.trim()) {
       result = result.filter((p) =>
         p.tensp?.toLowerCase().includes(searchText.toLowerCase())
       );
     }
 
-    // Lọc theo loại
     if (selectedCategory) {
       result = result.filter((p) => p.loaisp === selectedCategory);
     }
 
-    // Sắp xếp
     if (sortKey === 'price_asc') {
       result.sort((a, b) => (a.gia || 0) - (b.gia || 0));
     } else if (sortKey === 'price_desc') {
       result.sort((a, b) => (b.gia || 0) - (a.gia || 0));
     }
-    // 'newest' đã được sort từ Firestore (orderBy createdAt desc)
 
     return result;
   }, [products, searchText, selectedCategory, sortKey]);
@@ -118,17 +116,20 @@ export default function ProductListScreen({ navigation }) {
         </View>
         <Text style={styles.price}>{formatPrice(item.gia)}</Text>
       </View>
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => navigation.navigate('AddEditProduct', { product: item })}
-        >
-          <Text style={styles.editIcon}>✏️</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item)}>
-          <Text style={styles.deleteIcon}>🗑️</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Nút sửa/xóa chỉ hiện với Admin */}
+      {isAdmin && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.editBtn}
+            onPress={() => navigation.navigate('AddEditProduct', { product: item })}
+          >
+            <Text style={styles.editIcon}>✏️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item)}>
+            <Text style={styles.deleteIcon}>🗑️</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 
@@ -142,9 +143,24 @@ export default function ProductListScreen({ navigation }) {
             {filteredProducts.length}/{products.length} sản phẩm
           </Text>
         </View>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Đăng xuất</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          {/* Badge role */}
+          <View style={[styles.roleBadge, isAdmin ? styles.roleBadgeAdmin : styles.roleBadgeUser]}>
+            <Text style={styles.roleBadgeText}>{isAdmin ? '👑 Admin' : '👤 User'}</Text>
+          </View>
+          {/* Nút AI - chỉ Admin */}
+          {isAdmin && (
+            <TouchableOpacity
+              style={styles.aiBtn}
+              onPress={() => navigation.navigate('AIGenerate')}
+            >
+              <Text style={styles.aiBtnText}>✨ AI</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Đăng xuất</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -241,13 +257,15 @@ export default function ProductListScreen({ navigation }) {
         />
       )}
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => navigation.navigate('AddEditProduct', { product: null })}
-      >
-        <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity>
+      {/* FAB - chỉ Admin mới thấy */}
+      {isAdmin && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => navigation.navigate('AddEditProduct', { product: null })}
+        >
+          <Text style={styles.fabIcon}>+</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -265,13 +283,45 @@ const styles = StyleSheet.create({
   },
   headerTitle: { color: '#fff', fontSize: 24, fontWeight: '800' },
   headerSub: { color: '#8fa0ca', fontSize: 12, marginTop: 2 },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  roleBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  roleBadgeAdmin: {
+    backgroundColor: '#f0b429',
+  },
+  roleBadgeUser: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  roleBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  aiBtn: {
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
+  },
+  aiBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   logoutBtn: {
     backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
   },
-  logoutText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  logoutText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 
   // Search
   searchContainer: {

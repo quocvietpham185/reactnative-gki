@@ -6,8 +6,6 @@ import {
   doc,
   onSnapshot,
   query,
-  orderBy,
-  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -16,7 +14,7 @@ const COLLECTION = 'sanpham';
 
 // Lắng nghe real-time danh sách sản phẩm
 export const subscribeProducts = (callback) => {
-  const q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
+  const q = query(collection(db, COLLECTION));
   return onSnapshot(q, (snapshot) => {
     const products = snapshot.docs.map((doc) => ({
       idsanpham: doc.id,
@@ -33,7 +31,6 @@ export const addProduct = async (data) => {
     loaisp: data.loaisp,
     gia: Number(data.gia),
     hinhanh: data.hinhanh || '',
-    createdAt: serverTimestamp(),
   });
 };
 
@@ -45,7 +42,6 @@ export const updateProduct = async (id, data) => {
     loaisp: data.loaisp,
     gia: Number(data.gia),
     hinhanh: data.hinhanh || '',
-    updatedAt: serverTimestamp(),
   });
 };
 

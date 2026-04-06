@@ -1,54 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
+
+import { AuthProvider, useAuth } from '../context/AuthContext';
 
 import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import ProductListScreen from '../screens/ProductListScreen';
 import AddEditProductScreen from '../screens/AddEditProductScreen';
+import AIGenerateScreen from '../screens/AIGenerateScreen';
 
 const Stack = createStackNavigator();
 
-export default function AppNavigator() {
-  const [user, setUser] = useState(undefined); // undefined = loading
+function RootNavigator() {
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
-    return unsubscribe;
-  }, []);
-
-  if (user === undefined) return null; // Splash / đang kiểm tra auth
+  if (loading) return null;
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={screenOptions}>
-        {user ? (
-          // Đã đăng nhập
-          <>
-            <Stack.Screen
-              name="ProductList"
-              component={ProductListScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="AddEditProduct"
-              component={AddEditProductScreen}
-              options={({ route }) => ({
-                title: route.params?.product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm',
-              })}
-            />
-          </>
-        ) : (
-          // Chưa đăng nhập
+    <Stack.Navigator screenOptions={screenOptions}>
+      {user ? (
+        <>
+          <Stack.Screen
+            name="ProductList"
+            component={ProductListScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddEditProduct"
+            component={AddEditProductScreen}
+            options={({ route }) => ({
+              title: route.params?.product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm',
+            })}
+          />
+          <Stack.Screen
+            name="AIGenerate"
+            component={AIGenerateScreen}
+            options={{ title: '✨ AI Tạo Sản Phẩm' }}
+          />
+        </>
+      ) : (
+        <>
           <Stack.Screen
             name="Login"
             component={LoginScreen}
             options={{ headerShown: false }}
           />
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{ headerShown: false }}
+          />
+        </>
+      )}
+    </Stack.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
 
